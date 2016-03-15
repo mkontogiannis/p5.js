@@ -25,7 +25,7 @@ var defaultId = 'defaultCanvas0'; // this gets set again in createCanvas
  * @method createCanvas
  * @param  {Number} w width of the canvas
  * @param  {Number} h height of the canvas
- * @param  optional:{String} renderer 'p2d' | 'webgl'
+ * @param  {String} [renderer] 'p2d' | 'webgl'
  * @return {Object} canvas generated
  * @example
  * <div>
@@ -75,7 +75,7 @@ p5.prototype.createCanvas = function(w, h, renderer) {
 
   // set to invisible if still in setup (to prevent flashing with manipulate)
   if (!this._setupDone) {
-    c.className += ' p5_hidden'; // tag to show later
+    c.dataset.hidden = true; // tag to show later
     c.style.visibility='hidden';
   }
 
