@@ -1,7 +1,7 @@
 /**
- * module Shape
- * submodule 3D Primitives
- * for p5
+ * @module Shape
+ * @submodule 3D Primitives
+ * @for p5
  * @requires core
  * @requires p5.Geometry3D
  */
@@ -12,23 +12,22 @@ var p5 = require('../core/core');
 require('./p5.Geometry3D');
 
 /**
- * draw a plane with given a width and height
- * method plane
+ * Draw a plane with given a width and height
+ * @method plane
  * @param  {Number} width      width of the plane
  * @param  {Number} height     height of the plane
- * @return {p5}
+ * @return {p5}                the p5 object
  * @example
  * <div>
  * <code>
- * //draw a spining plane with width 100 and height 100
+ * //draw a plane with width 200 and height 200
  * function setup(){
- *   createCanvas(windowWidth, windowHeight, 'webgl');
+ *   createCanvas(100, 100, WEBGL);
  * }
  *
  * function draw(){
- *   background(255);
- *   rotateY(frameCount * 0.02);
- *   plane(100, 100);
+ *   background(200);
+ *   plane(200, 200);
  * }
  * </code>
  * </div>
@@ -59,7 +58,7 @@ p5.prototype.plane = function(width, height){
 
     var obj = geometry3d.generateObj();
 
-    this._renderer.initBuffer(gId, obj);
+    this._renderer.initBuffer(gId, [obj]);
 
   }
 
@@ -68,24 +67,24 @@ p5.prototype.plane = function(width, height){
 };
 
 /**
- * draw a sphere with given raduis
- * method sphere
+ * Draw a sphere with given raduis
+ * @method sphere
  * @param  {Number} radius            radius of circle
- * @param  {Number} [detail]          optional: number of segments,
+ * @param  {Number} [detail]          number of segments,
  *                                    the more segments the smoother geometry
- *                                    default is 24
- * @return {p5}
+ *                                    default is 24. Avoid detail number above
+ *                                    150, it may crash the browser.
  * @example
  * <div>
  * <code>
- * // draw a sphere with radius 100
+ * // draw a sphere with radius 200
  * function setup(){
- *   createCanvas(windowWidth, windowHeight, 'webgl');
+ *   createCanvas(100, 100, WEBGL);
  * }
  *
  * function draw(){
- *   background(255);
- *   sphere(100);
+ *   background(200);
+ *   sphere(200);
  * }
  * </code>
  * </div>
@@ -114,9 +113,9 @@ p5.prototype.sphere = function(radius, detail){
 
     geometry3d.parametricGeometry(createSphere, detailX, detailY);
 
-    var obj = geometry3d.generateObj();
+    var obj = geometry3d.generateObj(true, true);
 
-    this._renderer.initBuffer(gId, obj);
+    this._renderer.initBuffer(gId, [obj]);
   }
 
   this._renderer.drawBuffer(gId);
@@ -125,25 +124,93 @@ p5.prototype.sphere = function(radius, detail){
 };
 
 /**
- * draw a cylinder with given radius and height
- * method  cylinder
- * @param  {Number} radius            radius of the surface
- * @param  {Number} height            height of the cylinder
- * @param  {Number} [detail]          optional: number of segments,
- *                                    the more segments the smoother geometry
- *                                    default is 24
- * @return {p5}
+ * Draw an ellipsoid with given radius
+ * @method ellipsoid
+ * @param  {Number} radiusx           xradius of circle
+ * @param  {Number} radiusy           yradius of circle
+ * @param  {Number} radiusz           zradius of circle
+ * @param  {Number} [detail]          Number of segments.
+ *                                    The more segments, the smoother the
+ *                                    geometry (default is 24). Avoid detail
+ *                                    number above 150. It may crash the
+ *                                    browser.
+ * @return {p5}                       the p5 object
  * @example
  * <div>
  * <code>
- * //draw a spining sylinder with radius 100 and height 100
+ * // draw an ellipsoid with radius 200, 300 and 400
  * function setup(){
- *   createCanvas(windowWidth, windowHeight, 'webgl');
+ *   createCanvas(100, 100, WEBGL);
  * }
+ *
  * function draw(){
- *   background(255);
- *   rotateX(frameCount * 0.02);
- *   cylinder(100, 100);
+ *   background(200);
+ *   ellipsoid(200,300,400);
+ * }
+ * </code>
+ * </div>
+ */
+p5.prototype.ellipsoid = function(radiusx, radiusy, radiusz, detail){
+
+  radiusx = radiusx || 50;
+  radiusy = radiusy || 50;
+  radiusz = radiusz || 50;
+
+  var detailX = detail || 24;
+  var detailY = detail || 24;
+
+  var gId = 'ellipsoid|'+radiusx+'|'+radiusy+
+  '|'+radiusz+'|'+detailX+'|'+detailY;
+
+
+  if(!this._renderer.geometryInHash(gId)){
+
+    var geometry3d = new p5.Geometry3D();
+
+    var createEllipsoid = function(u, v){
+      var theta = 2 * Math.PI * u;
+      var phi = Math.PI * v - Math.PI / 2;
+      var x = radiusx * Math.cos(phi) * Math.sin(theta);
+      var y = radiusy * Math.sin(phi);
+      var z = radiusz * Math.cos(phi) * Math.cos(theta);
+      return new p5.Vector(x, y, z);
+    };
+
+    geometry3d.parametricGeometry(createEllipsoid, detailX, detailY);
+
+    var obj = geometry3d.generateObj(true, true);
+
+    this._renderer.initBuffer(gId, [obj]);
+  }
+
+  this._renderer.drawBuffer(gId);
+
+  return this;
+};
+
+/**
+ * Draw a cylinder with given radius and height
+ * @method  cylinder
+ * @param  {Number} radius            radius of the surface
+ * @param  {Number} height            height of the cylinder
+ * @param  {Number} [detail]          number of segments,
+ *                                    the more segments the smoother geometry
+ *                                    default is 24. Avoid detail number above
+ *                                    150. It may crash the browser.
+ * @return {p5}                       the p5 object
+ * @example
+ * <div>
+ * <code>
+ * //draw a spinning cylinder with radius 200 and height 200
+ * function setup(){
+ *   createCanvas(100, 100, WEBGL);
+ * }
+ *
+ * function draw(){
+ *   background(200);
+ *   rotateX(frameCount * 0.01);
+ *   rotateZ(frameCount * 0.01);
+ *   cylinder(200, 200);
  * }
  * </code>
  * </div>
@@ -171,7 +238,7 @@ p5.prototype.cylinder = function(radius, height, detail){
     };
 
     geometry3d.parametricGeometry(createCylinder, detailX, detailY);
-    geometry3d.mergeVertices();
+    var obj = geometry3d.generateObj(true);
 
     var createTop = function(u, v){
       var theta = 2 * Math.PI * u;
@@ -186,8 +253,10 @@ p5.prototype.cylinder = function(radius, height, detail){
       }
     };
 
-    geometry3d.parametricGeometry(
-      createTop, detailX, 1, geometry3d.vertices.length);
+    var geometry3d1 = new p5.Geometry3D();
+    geometry3d1.parametricGeometry(
+      createTop, detailX, 1);
+    var obj1 = geometry3d1.generateObj();
 
     var createBottom = function(u, v){
       var theta = 2 * Math.PI * u;
@@ -201,12 +270,13 @@ p5.prototype.cylinder = function(radius, height, detail){
       }
     };
 
-    geometry3d.parametricGeometry(
-      createBottom, detailX, 1, geometry3d.vertices.length);
+    var geometry3d2 = new p5.Geometry3D();
+    geometry3d2.parametricGeometry(
+      createBottom, detailX, 1);
+    var obj2 = geometry3d2.generateObj();
 
-    var obj = geometry3d.generateObj(true);
 
-    this._renderer.initBuffer(gId, obj);
+    this._renderer.initBuffer(gId, [obj, obj1, obj2]);
   }
 
   this._renderer.drawBuffer(gId);
@@ -216,25 +286,27 @@ p5.prototype.cylinder = function(radius, height, detail){
 
 
 /**
- * draw a cone with given radius and height
- * method cone
+ * Draw a cone with given radius and height
+ * @method cone
  * @param  {Number} radius            radius of the bottom surface
  * @param  {Number} height            height of the cone
- * @param  {Number} [detail]          optional: number of segments,
+ * @param  {Number} [detail]          number of segments,
  *                                    the more segments the smoother geometry
- *                                    default is 24
- * @return {p5}
+ *                                    default is 24. Avoid detail number above
+ *                                    150. It may crash the browser.
  * @example
  * <div>
  * <code>
- * //draw a spining cone with radius 100 and height 100
+ * //draw a spinning cone with radius 200 and height 200
  * function setup(){
- *   createCanvas(windowWidth, windowHeight, 'webgl');
+ *   createCanvas(100, 100, WEBGL);
  * }
+ *
  * function draw(){
- *   background(255);
- *   rotateX(frameCount * 0.02);
- *   cone(100, 200);
+ *   background(200);
+ *   rotateX(frameCount * 0.01);
+ *   rotateZ(frameCount * 0.01);
+ *   cone(200, 200);
  * }
  * </code>
  * </div>
@@ -262,8 +334,9 @@ p5.prototype.cone = function(radius, height, detail){
     };
 
     geometry3d.parametricGeometry(createCone, detailX, detailY);
-    geometry3d.mergeVertices();
+    var obj = geometry3d.generateObj(true);
 
+    var geometry3d1 = new p5.Geometry3D();
     var createBottom = function(u, v){
       var theta = 2 * Math.PI * u;
       var x = radius * (1 - v) * Math.sin(-theta);
@@ -272,12 +345,11 @@ p5.prototype.cone = function(radius, height, detail){
       return new p5.Vector(x, y, z);
     };
 
-    geometry3d.parametricGeometry(
-      createBottom, detailX, 1, geometry3d.vertices.length);
+    geometry3d1.parametricGeometry(
+      createBottom, detailX, 1);
+    var obj1 = geometry3d1.generateObj();
 
-    var obj = geometry3d.generateObj(true);
-
-    this._renderer.initBuffer(gId, obj);
+    this._renderer.initBuffer(gId, [obj, obj1]);
   }
 
   this._renderer.drawBuffer(gId);
@@ -287,27 +359,27 @@ p5.prototype.cone = function(radius, height, detail){
 
 
 /**
- * draw a torus with given radius and tube radius
- * method torus
+ * Draw a torus with given radius and tube radius
+ * @method torus
  * @param  {Number} radius            radius of the whole ring
  * @param  {Number} tubeRadius        radius of the tube
- * @param  {Number} [detail]          optional: number of segments,
+ * @param  {Number} [detail]          number of segments,
  *                                    the more segments the smoother geometry
- *                                    default is 24
- * @return {p5}
+ *                                    default is 24. Avoid detail number above
+ *                                    150. It may crash the browser.
  * @example
  * <div>
  * <code>
- * //draw a spining torus with radius 100 and tube radius 20
+ * //draw a spinning torus with radius 200 and tube radius 60
  * function setup(){
- *   createCanvas(windowWidth, windowHeight, 'webgl');
+ *   createCanvas(100, 100, WEBGL);
  * }
  *
  * function draw(){
- *   background(255);
- *   rotateX(frameCount * 0.02);
- *   rotateY(frameCount * 0.02);
- *   torus(100, 20);
+ *   background(200);
+ *   rotateX(frameCount * 0.01);
+ *   rotateY(frameCount * 0.01);
+ *   torus(200, 60);
  * }
  * </code>
  * </div>
@@ -337,9 +409,9 @@ p5.prototype.torus = function(radius, tubeRadius, detail){
 
     geometry3d.parametricGeometry(createTorus, detailX, detailY);
 
-    var obj = geometry3d.generateObj();
+    var obj = geometry3d.generateObj(true);
 
-    this._renderer.initBuffer(gId, obj);
+    this._renderer.initBuffer(gId, [obj]);
   }
 
   this._renderer.drawBuffer(gId);
@@ -348,25 +420,25 @@ p5.prototype.torus = function(radius, tubeRadius, detail){
 };
 
 /**
- * draw a box with given width, height and depth
- * method  box
+ * Draw a box with given width, height and depth
+ * @method  box
  * @param  {Number} width  width of the box
  * @param  {Number} height height of the box
  * @param  {Number} depth  depth of the box
- * @return {p5}
+ * @return {p5}            the p5 object
  * @example
  * <div>
  * <code>
- * //draw a spining box with width, height and depth 100
+ * //draw a spinning box with width, height and depth 200
  * function setup(){
- *   createCanvas(windowWidth, windowHeight, 'webgl');
+ *   createCanvas(100, 100, WEBGL);
  * }
  *
  * function draw(){
- *   background(255);
- *   rotateX(frameCount * 0.02);
- *   rotateY(frameCount * 0.02);
- *   box(100, 100, 100);
+ *   background(200);
+ *   rotateX(frameCount * 0.01);
+ *   rotateY(frameCount * 0.01);
+ *   box(200, 200, 200);
  * }
  * </code>
  * </div>
@@ -437,9 +509,9 @@ p5.prototype.box = function(width, height, depth){
     geometry3d.parametricGeometry(
       createPlane6, detailX, detailY, geometry3d.vertices.length);
 
-    var obj = geometry3d.generateObj(true);
+    var obj = geometry3d.generateObj();
 
-    this._renderer.initBuffer(gId, obj);
+    this._renderer.initBuffer(gId, [obj]);
   }
 
   this._renderer.drawBuffer(gId);
